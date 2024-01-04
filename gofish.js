@@ -8,8 +8,7 @@ export default class GoFish {
 	#yourCardsEl = document.getElementById('yourCards');
 	#popup = document.getElementById('popup');
 	#minimumKnownYourCards = {};
-	#minimumKnownOpponentCards = {};
-	#possibleKnownCardsLeftInDeck = {};
+	#maximumKnownCardsLeftInDeck = {};
 	#difficulty = '';
 	#turnOffEvents = false;
 	#sound = new Audio('card.mp3');
@@ -49,7 +48,7 @@ export default class GoFish {
 		window.addEventListener('keydown', blocker, true);
 		window.addEventListener('focus', blocker, true);
 		window.addEventListener('mousedown', blocker, true);
-		
+
 		this.#newGameButtonEl.onclick = e => {
 			this.#showDialog('Start a new game?', () => {
 				this.newGame();
@@ -77,7 +76,7 @@ export default class GoFish {
 
 			return;
 		}
-		
+
 		this.#yourInputReject?.('Started new game');
 		this.#yourTurn = Math.random() < 0.5;
 		this.#turnOffEvents = true;
@@ -98,24 +97,19 @@ export default class GoFish {
 			'K': 0,
 		};
 
-		this.#minimumKnownOpponentCards = structuredClone(this.#minimumKnownYourCards);
-		this.#possibleKnownCardsLeftInDeck = Object.fromEntries(Object.entries(this.#minimumKnownOpponentCards).map(e => [e[0], 4]));
+		this.#maximumKnownCardsLeftInDeck = Object.fromEntries(Object.entries(this.#minimumKnownYourCards).map(e => [e[0], 4]));
 		this.#opponentFishesEl.innerHTML = this.#yourFishesEl.innerHTML = this.#yourCardsEl.innerHTML = this.#opponentCardsEl.innerHTML = '';
 
 		const allCards = Object.keys(this.#minimumKnownYourCards).flatMap(level => [
-			{type: 'hearts', level},
-			{type: 'diamonds', level},
-			{type: 'spades', level},
-			{type: 'clubs', level}
+			{ type: 'hearts', level },
+			{ type: 'diamonds', level },
+			{ type: 'spades', level },
+			{ type: 'clubs', level }
 		]);
 
-		for (let i = 0; i < allCards.length; ++i) {
-			const r = Math.floor(Math.random() * allCards.length);
-			[allCards[i], allCards[r]] = [allCards[r], allCards[i]];
-		}
-
+		this.#shuffle(allCards);
 		this.#fullDeckEl.innerHTML = allCards.map(x => `<div class="full-deck-card"><div class="card-back" data-type="${x.type}" data-level="${x.level}"></div></div>`).join('');
-		
+
 		for (let i = 0; i < 7; ++i) {
 			const card = this.#pickCardFromDeck();
 			await this.#addToCardsFromDeck(this.#yourCardsEl, card);
@@ -123,15 +117,15 @@ export default class GoFish {
 
 		for (let i = 0; i < 7; ++i) {
 			const card = this.#pickCardFromDeck();
-			this.#minimumKnownOpponentCards[card.dataset.level]++;
-			this.#possibleKnownCardsLeftInDeck[card.dataset.level]--;
 			await this.#addToCardsFromDeck(this.#opponentCardsEl, card);
 		}
 
 		await this.#checkForCopleteBlocks();
 		await this.#cleanupLeftovers();
 
-		await this.#processTurn();
+		do {
+			await this.#processTurn();
+		} while (true);
 	}
 
 	#showDialog(message, onAccept = null, onDecline = null) {
@@ -173,17 +167,22 @@ export default class GoFish {
 		group.append(card.parentElement);
 	}
 
-	async #checkForCopleteBlocks() {
+	async #checkForCopleteBlocks(yourCardIsKnown = false) {
 		for (const group of [...this.#yourCardsEl.querySelectorAll('.group:has(:nth-child(4))')]) {
+			if (yourCardIsKnown) {
+				this.#minimumKnownYourCards[group.dataset.level] = 0;
+				this.#maximumKnownCardsLeftInDeck[group.dataset.level] = 0;
+			}
 			await this.#addToFish(group);
 		}
 
 		for (const group of [...this.#opponentCardsEl.querySelectorAll('.group:has(:nth-child(4))')]) {
-			this.#possibleKnownCardsLeftInDeck[group.dataset.level] = 0;
-			this.#minimumKnownOpponentCards[group.dataset.level] = 0;
+			this.#maximumKnownCardsLeftInDeck[group.dataset.level] = 0;
 			this.#minimumKnownYourCards[group.dataset.level] = 0;
 			await this.#addToFish(group);
 		}
+
+		this.#updateInfo();
 	}
 
 	async #addToFish(group) {
@@ -230,8 +229,12 @@ export default class GoFish {
 		}
 	}
 
+	#findGroup(level, cardsEl) {
+		return cardsEl.querySelector(`[data-level="${level}"]`);
+	}
+
 	#getGroup(level, cardsEl) {
-		let group = cardsEl.querySelector(`[data-level="${level}"]`);
+		let group = this.#findGroup(level, cardsEl);
 
 		if (!group) {
 			group = document.createElement('div');
@@ -256,29 +259,189 @@ export default class GoFish {
 	async #processTurn() {
 		this.#turnOffEvents = true;
 
-		const guess = await this.#waitForYourGuess();
+		if (!this.#pickCardFromDeck()) {
+			const opponentFishes = this.#opponentFishesEl.children.length;
+			const yourFishes = this.#yourFishesEl.children.length;
 
-		/*if (this.#yourTurn) {
+			if (opponentFishes > 6) {
+				this.#turnOffEvents = false;
+				this.#showDialog('You lost!', () => {
+					this.newGame();
+				});
+
+				throw 'You lost!';
+			}
+
+			if (yourFishes > 6) {
+				this.#turnOffEvents = false;
+				this.#showDialog('You won!', () => {
+					this.newGame();
+				});
+
+				throw 'You won!';
+			}
+		}
+
+		if (this.#yourTurn) {
+			const guess = await this.#waitForYourGuess();
+			if (guess) {
+				await this.#showMessage(`Have any ${this.#cardNames[guess]}?`, true);
+			}
+			
+			await this.#processYourGuess(guess);
 		} else {
+			await this.#processOpponentGuess();
+		}
+	}
 
-		}*/
-		await this.#showMessage(`Have any ${this.#cardNames[guess]}?`, true)
-		await this.#showMessage(`Have any ${this.#cardNames[guess]}?`, false)
+	#shuffle(arr) {
+		for (let i = 0; i < arr.length; ++i) {
+			const r = Math.floor(Math.random() * arr.length);
+			[arr[i], arr[r]] = [arr[r], arr[i]];
+		}
+	}
 
-		this.#processTurn();
+	async #processOpponentGuess() {
+		const oponentCards = this.#getOponentCards();
+		const keys = Object.keys(oponentCards);
+		this.#shuffle(keys);
+
+		let guesses = ['', '', '', ''];
+
+		for (const key in keys) {
+			if (oponentCards[key]) {
+				guesses[this.#minimumKnownYourCards[key] + oponentCards[key]] = key;
+			}
+		}
+
+		guesses = guesses.filter(g => g);
+		let guess;
+
+		if (this.#difficulty === 'hard') {
+			guess = guesses.at(-1);
+		} else if (this.#difficulty === 'medium') {
+			guess = guesses[1] ?? guesses[0];
+		} else {
+			guess = guesses[0];
+		}
+
+		this.#yourTurn = true;
+		
+		if (guess) {
+			await this.#showMessage(`Any ${this.#cardNames[guess]}?`, true);
+			const group = this.#getGroup(guess, this.#yourCardsEl);
+			const count = group?.children.length ?? 0;
+			this.#minimumKnownYourCards[guess] = 0;
+
+			if (count > 0) {
+				this.#yourTurn = false;
+				await this.#passCards(group);
+			}
+		}
+
+		if (this.#yourTurn) {
+			const card = this.#pickCardFromDeck();
+
+			if (card) {
+				await this.#addToCardsFromDeck(this.#opponentCardsEl, card);
+				this.#yourTurn = card.dataset.level !== guess;
+			}
+		}
+
+		await this.#checkForCopleteBlocks();
+	}
+
+	async #processYourGuess(guess) {
+		const group = this.#getGroup(guess ?? '--', this.#opponentCardsEl);
+		const count = group?.children.length ?? 0;
+
+		if (guess && !this.#minimumKnownYourCards[guess]) {
+			this.#minimumKnownYourCards[guess] = 1;
+		}
+
+		if (count > 0) {
+			this.#minimumKnownYourCards[guess] += count;
+			await this.#passCards(group);
+			await this.#checkForCopleteBlocks();
+		} else {
+			await this.#showMessage(`Go fish`, false);
+			this.#yourTurn = await this.#waitForYourFish(guess ?? '--');
+			const card = this.#pickCardFromDeck();
+
+			if (card) {
+				await this.#addToCardsFromDeck(this.#yourCardsEl, card);
+			}
+
+			await this.#checkForCopleteBlocks(this.#yourTurn);
+		}
+	}
+
+	#getOponentCards() {
+		const opponentCards = Object.fromEntries(Object.entries(this.#minimumKnownYourCards).map(e => [e[0], 0]));
+		this.#opponentCardsEl.querySelectorAll('.card').forEach(card => opponentCards[card.dataset.level]++);
+		return opponentCards;
+	}
+
+	#updateInfo() {
+		const opponentCards = this.#getOponentCards();
+		const cardsLeftInDeck = this.#fullDeckEl.children.length;
+
+		for (const level in opponentCards) {
+			this.#maximumKnownCardsLeftInDeck[level] = Math.min(
+				this.#maximumKnownCardsLeftInDeck[level],
+				4 - opponentCards[level] - this.#minimumKnownYourCards[level],
+				cardsLeftInDeck,
+			)
+
+			this.#minimumKnownYourCards[level] = Math.max(
+				this.#minimumKnownYourCards[level],
+				4 - opponentCards[level] - this.#maximumKnownCardsLeftInDeck[level],
+			)
+		}
+	}
+
+	#waitForYourFish(lastGuess) {
+		return new Promise((resolve, reject) => {
+			const card = this.#pickCardFromDeck();
+
+			if (!card) {
+				resolve(false);
+			}
+
+			this.#turnOffEvents = false;
+			this.#yourInputReject = reject;
+
+			this.#addCardClickListener(card, c => {
+				this.#yourInputReject = null;
+				this.#turnOffEvents = true;
+
+				this.#cleanupLeftovers().then(() => {
+					resolve(c.dataset.level === lastGuess);
+				});
+			});
+		});
 	}
 
 	#waitForYourGuess() {
 		return new Promise((resolve, reject) => {
+			const cards = this.#yourCardsEl.querySelectorAll('.group > :last-child .card');
+
+			if (!cards.length) {
+				resolve();
+				return;
+			}
+
 			this.#turnOffEvents = false;
 			this.#yourInputReject = reject;
 
-			this.#yourCardsEl.querySelectorAll('.group > :last-child .card').forEach(card => {
+			cards.forEach(card => {
 				this.#addCardClickListener(card, c => {
 					this.#yourInputReject = null;
-					this.#cleanupLeftovers();
 					this.#turnOffEvents = true;
-					resolve(c.dataset.level);
+
+					this.#cleanupLeftovers().then(() => {
+						resolve(c.dataset.level);
+					});
 				});
 			});
 		});
