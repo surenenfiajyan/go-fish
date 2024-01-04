@@ -1,0 +1,326 @@
+@font-face {
+	font-family: 'AppFont';
+	src: url(font.ttf);
+}
+
+* {
+	font-family: 'AppFont';
+	font-stretch: ultra-expanded;
+}
+
+.card,
+.card-back {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	container-type: size;
+	width: min(10vmin, 60px);
+	border-radius: 1vmin;
+	border: 1px solid black;
+	aspect-ratio: 0.6;
+	position: relative;
+	top: 0;
+	left: 0;
+	overflow: hidden;
+	outline: none;
+
+	&:focus {
+		outline: 3px solid green;
+	}
+
+	@media (max-width: 500px) or (max-height: 500px) {
+		width: 50px;
+		border-radius: 5px;
+	}
+
+	background-color: white;
+}
+
+.card {
+	&::before {
+		content: attr(data-level);
+		font-size: 70cqw;
+		font-weight: bold;
+	}
+
+	&[data-type=diamonds],
+	&[data-type=hearts] {
+		color: red;
+	}
+
+	&::after {
+		font-size: 40cqw;
+		position: absolute;
+		top: -48cqw;
+		bottom: 0;
+		left: 5cqw;
+		right: 5cqw;
+		white-space: pre;
+		line-height: 130cqw;
+		letter-spacing: 50cqw;
+	}
+
+	&[data-type=hearts] {
+		&::after {
+			content: "♥\A  ♥";
+		}
+	}
+
+	&[data-type=diamonds] {
+		&::after {
+			content: "♦\A  ♦";
+		}
+	}
+
+	&[data-type=spades] {
+		&::after {
+			content: "♠\A  ♠";
+		}
+	}
+
+	&[data-type=clubs] {
+		&::after {
+			content: "♣\A  ♣";
+			letter-spacing: 45cqw;
+		}
+	}
+}
+
+.card-back {
+	background-color: aqua;
+	background-image: repeating-linear-gradient(45deg, red, red 2%, transparent 2%, transparent 6%),
+		repeating-linear-gradient(-45deg, red, red 2%, transparent 2%, transparent 6%);
+
+
+	&::before {
+		content: "";
+		width: 50%;
+		border-radius: 50%;
+		aspect-ratio: 1;
+		background-color: white;
+		background-image: url(fish.png);
+		background-repeat: no-repeat;
+		background-position: center;
+		background-size: 87%;
+		border: 3.8cqw solid red;
+	}
+}
+
+.full-deck {
+	position: relative;
+	z-index: 10;
+	display: flex;
+	flex-direction: column-reverse;
+	align-items: center;
+	justify-content: flex-start;
+	height: max(90px, 15vh);
+	max-height: 130px;
+
+	.full-deck-card {
+		height: 1px;
+
+		.card-back {
+			transform: translateY(-90%) rotate3d(1, 0, 1, 45deg);
+		}
+	}
+}
+
+.opponent-fishes,
+.your-fishes {
+	display: flex;
+	flex-direction: column-reverse;
+	justify-content: flex-start;
+	height: max(90px, 15vh);
+	max-height: 130px;
+	padding: 0 60px;
+
+	.fish-card {
+		height: 1px;
+
+		.opponent-fishes & {
+			align-self: flex-start;
+
+			&:nth-child(8n+1),
+			&:nth-child(8n+2),
+			&:nth-child(8n+3),
+			&:nth-child(8n+4) {
+				.card-back {
+					transform: translateY(-90%) rotate3d(1, 0, 1, -45deg);
+				}
+			}
+
+			&:nth-child(8n+5),
+			&:nth-child(8n+6),
+			&:nth-child(8n+7),
+			&:nth-child(8n+8) {
+				.card-back {
+					transform: translateY(-90%) rotate3d(1, 0, 1, 45deg);
+				}
+			}
+		}
+
+		.your-fishes & {
+			align-self: flex-end;
+
+			&:nth-child(8n+1),
+			&:nth-child(8n+2),
+			&:nth-child(8n+3),
+			&:nth-child(8n+4) {
+				.card-back {
+					transform: translateY(-90%) rotate3d(1, 0, 1, 45deg);
+				}
+			}
+
+			&:nth-child(8n+5),
+			&:nth-child(8n+6),
+			&:nth-child(8n+7),
+			&:nth-child(8n+8) {
+				.card-back {
+					transform: translateY(-90%) rotate3d(1, 0, 1, -45deg);
+				}
+			}
+		}
+	}
+}
+
+button,
+select {
+	padding: 5px;
+	background: skyblue;
+	cursor: pointer;
+	border-radius: 5px;
+	border: 2px solid blue;
+	outline: none;
+
+	&:focus,
+	&:hover {
+		border-color: green;
+	}
+
+	&:active {
+		background: blue;
+		border-color: green;
+		color: white
+	}
+
+	option {
+		background: white;
+	}
+}
+
+html,
+body {
+	padding: 0;
+	margin: 0;
+}
+
+header {
+	background: pink;
+	display: flex;
+	padding: 10px;
+	align-items: center;
+	justify-content: center;
+	gap: 10px;
+}
+
+main {
+	display: flex;
+	flex-direction: column;
+}
+
+.your-cards,
+.opponent-cards {
+	position: relative;
+	margin-top: 10px;
+	display: flex;
+	flex-wrap: wrap;
+	min-height: 120px;
+	border-radius: 10px;
+	background-color: brown;
+	padding: 10px;
+	gap: 10px;
+
+	.message {
+		position: absolute;
+		padding: 10px 20px;
+		border: 1px solid black;
+		border-radius: 10px;
+		background: white;
+		max-width: 60vw;
+		font-weight: bold;
+		font-size: 30px;
+
+		&::before {
+			content: "";
+			position: absolute;
+			border: 1px solid black;
+			transform-origin: center;
+			width: 15px;
+			height: 15px;
+			background: white;
+			transform: rotate(45deg);
+		}
+
+		.your-cards & {
+			right: 10px;
+			bottom: calc(10px + 100%);
+
+			&::before {
+				bottom: -7.5px;
+				clip-path: polygon(100% 0, 0 100%, 100% 100%);
+			}
+		}
+
+		.opponent-cards & {
+			display: block;
+			left: 10px;
+			top: calc(10px + 100%);
+
+			&::before {
+				top: -7.5px;
+				clip-path: polygon(0 0, 0 100%, 100% 0);
+			}
+		}
+	}
+
+	.group {
+		display: flex;
+		flex-direction: column;
+		min-height: 110px;
+		height: min(20vmin, 130px);
+		min-width: min(10vmin, 60px);
+
+		.play-card {
+			height: 5px;
+
+			.card {
+				top: 10px;
+				margin-bottom: 5px;
+			}
+		}
+	}
+}
+
+.opponent-cards {
+	:not(.message) {
+		display: none !important;
+	}
+}
+
+dialog {
+	outline: none;
+	border: 2px solid green;
+	padding: 10px 20px;
+	border-radius: 10px;
+
+	.message {
+		text-align: center;
+		margin-bottom: 10px;
+	}
+	
+	.buttons {
+		display: flex;
+		gap: 20px;
+		justify-content: center;
+	}
+}
