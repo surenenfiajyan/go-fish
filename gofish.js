@@ -328,7 +328,7 @@ export default class GoFish {
 		this.#yourTurn = true;
 		
 		if (guess) {
-			await this.#showMessage(`Any ${this.#cardNames[guess]}?`, true);
+			await this.#showMessage(`Any ${this.#cardNames[guess]}?`, false);
 			const group = this.#getGroup(guess, this.#yourCardsEl);
 			const count = group?.children.length ?? 0;
 			this.#minimumKnownYourCards[guess] = 0;
