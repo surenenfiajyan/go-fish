@@ -260,8 +260,8 @@ export default class GoFish {
 		this.#turnOffEvents = true;
 
 		if (!this.#pickCardFromDeck()) {
-			const opponentFishes = this.#opponentFishesEl.children.length;
-			const yourFishes = this.#yourFishesEl.children.length;
+			const opponentFishes = this.#opponentFishesEl.children.length / 4;
+			const yourFishes = this.#yourFishesEl.children.length / 4;
 
 			if (opponentFishes > 6) {
 				this.#turnOffEvents = false;
