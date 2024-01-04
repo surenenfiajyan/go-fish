@@ -334,6 +334,7 @@ export default class GoFish {
 			this.#minimumKnownYourCards[guess] = 0;
 
 			if (count > 0) {
+				await this.#showMessage(`No, go fish`, true);
 				this.#yourTurn = false;
 				await this.#passCards(group);
 			}
