@@ -49,39 +49,37 @@
 	}
 
 	&::after {
-		font-size: 40cqw;
+		content: "";
 		position: absolute;
-		top: -48cqw;
+		top: 0;
 		bottom: 0;
-		left: 5cqw;
-		right: 5cqw;
-		white-space: pre;
-		line-height: 130cqw;
-		letter-spacing: 50cqw;
+		left: 0;
+		right: 0;
+		background-size: contain;
+		background-repeat: no-repeat;
 	}
 
 	&[data-type=hearts] {
 		&::after {
-			content: "♥\A  ♥";
+			background-image: url(hearts.png);
 		}
 	}
 
 	&[data-type=diamonds] {
 		&::after {
-			content: "♦\A  ♦";
+			background-image: url(diamonds.png);
 		}
 	}
 
 	&[data-type=spades] {
 		&::after {
-			content: "♠\A  ♠";
+			background-image: url(spades.png);
 		}
 	}
 
 	&[data-type=clubs] {
 		&::after {
-			content: "♣\A  ♣";
-			letter-spacing: 45cqw;
+			background-image: url(clubs.png);
 		}
 	}
 }
