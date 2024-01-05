@@ -1,6 +1,6 @@
 # Go Fish
 ## Description
-Go Fish game
+An implementation of [Go Fish game](https://en.wikipedia.org/wiki/Go_Fish)
 ## How to run
 Open this [link](https://surenenfiajyan.github.io/go-fish/)
 ## License
