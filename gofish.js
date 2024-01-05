@@ -342,7 +342,7 @@ export default class GoFish {
 
 		if (guess) {
 			await this.#showMessage(`Any ${this.#cardNames[guess]}?`, false);
-			const group = this.#getGroup(guess, this.#yourCardsEl);
+			const group = this.#findGroup(guess, this.#yourCardsEl);
 			const count = group?.children.length ?? 0;
 			this.#minimumKnownYourCards[guess] = 0;
 
@@ -367,7 +367,7 @@ export default class GoFish {
 	}
 
 	async #processYourGuess(guess) {
-		const group = this.#getGroup(guess ?? '--', this.#opponentCardsEl);
+		const group = this.#findGroup(guess ?? '--', this.#opponentCardsEl);
 		const count = group?.children.length ?? 0;
 
 		if (guess && !this.#minimumKnownYourCards[guess]) {
