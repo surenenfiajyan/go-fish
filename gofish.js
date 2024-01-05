@@ -384,6 +384,10 @@ export default class GoFish {
 			const card = this.#pickCardFromDeck();
 
 			if (card) {
+				if (this.#yourTurn) {
+					this.#minimumKnownYourCards[guess]++;
+				}
+
 				await this.#addToCardsFromDeck(this.#yourCardsEl, card);
 			}
 
