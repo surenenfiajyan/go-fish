@@ -57,7 +57,11 @@ export default class GoFish {
 			});
 		};
 
+		this.#difficultySelectEl.value = localStorage.getItem('difficulty') ?? 'medium';
+
 		this.#difficultySelectEl.onchange = e => {
+			localStorage.setItem('difficulty', e.target.value);
+
 			this.#showDialog('The difficulty will be applied only in the next game, would you like to start a new game?', () => {
 				this.newGame();
 			}, () => {
