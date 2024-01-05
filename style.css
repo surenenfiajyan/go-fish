@@ -289,7 +289,7 @@ main {
 		flex-direction: column;
 		min-height: 110px;
 		height: min(20vmin, 130px);
-		min-width: min(10vmin, 60px);
+		min-width: calc(max(min(10vmin, 60px) + 2px, 52px));
 
 		.play-card {
 			height: 5px;
