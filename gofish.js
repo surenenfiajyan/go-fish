@@ -291,7 +291,7 @@ export default class GoFish {
 			if (guess) {
 				await this.#showMessage(`Have any ${this.#cardNames[guess]}?`, true);
 			}
-			
+
 			await this.#processYourGuess(guess);
 		} else {
 			await this.#processOpponentGuess();
@@ -339,7 +339,7 @@ export default class GoFish {
 	async #processOpponentGuess() {
 		const guess = this.#generateOpponentGuess();
 		this.#yourTurn = true;
-		
+
 		if (guess) {
 			await this.#showMessage(`Any ${this.#cardNames[guess]}?`, false);
 			const group = this.#getGroup(guess, this.#yourCardsEl);
