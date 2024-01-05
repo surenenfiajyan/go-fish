@@ -308,10 +308,17 @@ export default class GoFish {
 	#generateOpponentGuess() {
 		const opponentCards = this.#getOpponentCards();
 		const guesses = Object.keys(opponentCards).filter(guess => opponentCards[guess]);
+		this.#shuffle(guesses);
 
 		if (this.#difficulty === 'hard') {
 			for (const guess of guesses) {
 				if (this.#minimumKnownYourCards[guess] === 3) {
+					return guess;
+				}
+			}
+
+			for (const guess of guesses) {
+				if (this.#minimumKnownYourCards[guess] === 2) {
 					return guess;
 				}
 			}
