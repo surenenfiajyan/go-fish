@@ -305,16 +305,20 @@ export default class GoFish {
 		const opponentCards = this.#getOpponentCards();
 		const guesses = Object.keys(opponentCards).filter(guess => opponentCards[guess]);
 
+		if (this.#difficulty === 'hard') {
+			for (const guess of guesses) {
+				if (this.#minimumKnownYourCards[guess] === 3) {
+					return guess;
+				}
+			}
+		}
+
 		guesses.sort((g1, g2) => {
 			const v1 = this.#minimumKnownYourCards[g1] + opponentCards[g1];
 			const v2 = this.#minimumKnownYourCards[g2] + opponentCards[g2];
 
 			return v1 > v2 ? -1 : 1;
 		});
-
-		console.log('guesses', guesses);
-		console.log('opponentCards', opponentCards);
-		console.log('minimumKnownYourCards', this.#minimumKnownYourCards);
 
 		if (this.#difficulty === 'easy') {
 			return guesses.at(-1);
