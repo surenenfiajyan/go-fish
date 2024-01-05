@@ -301,30 +301,35 @@ export default class GoFish {
 		}
 	}
 
+	#generateOpponentGuess() {
+		const opponentCards = this.#getOpponentCards();
+		const guesses = Object.keys(opponentCards).filter(guess => opponentCards[guess]);
+
+		guesses.sort((g1, g2) => {
+			const v1 = this.#minimumKnownYourCards[g1] + opponentCards[g1];
+			const v2 = this.#minimumKnownYourCards[g2] + opponentCards[g2];
+
+			return v1 > v2 ? -1 : 1;
+		});
+
+		console.log('guesses', guesses);
+		console.log('opponentCards', opponentCards);
+		console.log('minimumKnownYourCards', this.#minimumKnownYourCards);
+
+		if (this.#difficulty === 'easy') {
+			return guesses.at(-1);
+		}
+
+		if (this.#difficulty === 'medium') {
+			return guesses.at(Math.floor(Math.random() * guesses.length));
+		}
+
+		const idx = Math.min(Math.pow(6, Math.random()), guesses.length - 1);
+		return guesses.at(idx);
+	}
+
 	async #processOpponentGuess() {
-		const oponentCards = this.#getOponentCards();
-		const keys = Object.keys(oponentCards);
-		this.#shuffle(keys);
-
-		let guesses = ['', '', '', ''];
-
-		for (const key in keys) {
-			if (oponentCards[key]) {
-				guesses[this.#minimumKnownYourCards[key] + oponentCards[key]] = key;
-			}
-		}
-
-		guesses = guesses.filter(g => g);
-		let guess;
-
-		if (this.#difficulty === 'hard') {
-			guess = guesses.at(-1);
-		} else if (this.#difficulty === 'medium') {
-			guess = guesses[1] ?? guesses[0];
-		} else {
-			guess = guesses[0];
-		}
-
+		const guess = this.#generateOpponentGuess();
 		this.#yourTurn = true;
 		
 		if (guess) {
@@ -378,17 +383,27 @@ export default class GoFish {
 		}
 	}
 
-	#getOponentCards() {
+	#getOpponentCards() {
 		const opponentCards = Object.fromEntries(Object.entries(this.#minimumKnownYourCards).map(e => [e[0], 0]));
 		this.#opponentCardsEl.querySelectorAll('.card').forEach(card => opponentCards[card.dataset.level]++);
 		return opponentCards;
 	}
 
+	#getYourCardsCount() {
+		return this.#yourCardsEl.querySelectorAll('.card').length;
+	}
+
 	#updateInfo() {
-		const opponentCards = this.#getOponentCards();
+		const yourCardsCount = this.#getYourCardsCount();
+		const opponentCards = this.#getOpponentCards();
 		const cardsLeftInDeck = this.#fullDeckEl.children.length;
 
 		for (const level in opponentCards) {
+			this.#minimumKnownYourCards[level] = Math.min(
+				this.#minimumKnownYourCards[level],
+				yourCardsCount,
+			)
+
 			this.#maximumKnownCardsLeftInDeck[level] = Math.min(
 				this.#maximumKnownCardsLeftInDeck[level],
 				4 - opponentCards[level] - this.#minimumKnownYourCards[level],
