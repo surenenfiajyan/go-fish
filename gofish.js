@@ -310,6 +310,12 @@ export default class GoFish {
 					return guess;
 				}
 			}
+
+			for (const guess of guesses) {
+				if (this.#minimumKnownYourCards[guess] === 1) {
+					return guess;
+				}
+			}
 		}
 
 		guesses.sort((g1, g2) => {
@@ -323,14 +329,10 @@ export default class GoFish {
 			return guesses.at(-1);
 		}
 
-		if (this.#difficulty === 'medium') {
-			return guesses.at(Math.floor(Math.random() * guesses.length));
-		}
-
 		const idx = Math.min(Math.floor(Math.pow(5, Math.random()) - 1), guesses.length - 1);
 		const guess = guesses.at(idx);
 
-		if (guess) {
+		if (guess && this.#difficulty === 'hard') {
 			this.#previousOpponentGuesses[guess]++;
 		}
 
