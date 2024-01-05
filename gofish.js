@@ -9,6 +9,7 @@ export default class GoFish {
 	#popup = document.getElementById('popup');
 	#minimumKnownYourCards = {};
 	#maximumKnownCardsLeftInDeck = {};
+	#previousOpponentGuesses = {};
 	#difficulty = '';
 	#turnOffEvents = false;
 	#sound = new Audio('card.mp3');
@@ -85,23 +86,9 @@ export default class GoFish {
 		this.#yourTurn = Math.random() < 0.5;
 		this.#turnOffEvents = true;
 		this.#difficulty = this.#difficultySelectEl.value;
-		this.#minimumKnownYourCards = {
-			'A': 0,
-			'2': 0,
-			'3': 0,
-			'4': 0,
-			'5': 0,
-			'6': 0,
-			'7': 0,
-			'8': 0,
-			'9': 0,
-			'10': 0,
-			'J': 0,
-			'Q': 0,
-			'K': 0,
-		};
-
-		this.#maximumKnownCardsLeftInDeck = Object.fromEntries(Object.entries(this.#minimumKnownYourCards).map(e => [e[0], 4]));
+		this.#minimumKnownYourCards = Object.fromEntries(Object.keys(this.#cardNames).map(k => [k, 0]));
+		this.#previousOpponentGuesses = Object.fromEntries(Object.keys(this.#cardNames).map(k => [k, 0]));
+		this.#maximumKnownCardsLeftInDeck = Object.fromEntries(Object.keys(this.#cardNames).map(k => [k, 4]));
 		this.#opponentFishesEl.innerHTML = this.#yourFishesEl.innerHTML = this.#yourCardsEl.innerHTML = this.#opponentCardsEl.innerHTML = '';
 
 		const allCards = Object.keys(this.#minimumKnownYourCards).flatMap(level => [
@@ -325,8 +312,8 @@ export default class GoFish {
 		}
 
 		guesses.sort((g1, g2) => {
-			const v1 = this.#minimumKnownYourCards[g1] + opponentCards[g1];
-			const v2 = this.#minimumKnownYourCards[g2] + opponentCards[g2];
+			const v1 = this.#minimumKnownYourCards[g1] + opponentCards[g1] - this.#previousOpponentGuesses[g1];
+			const v2 = this.#minimumKnownYourCards[g2] + opponentCards[g2] - this.#previousOpponentGuesses[g2];
 
 			return v1 > v2 ? -1 : 1;
 		});
@@ -339,8 +326,14 @@ export default class GoFish {
 			return guesses.at(Math.floor(Math.random() * guesses.length));
 		}
 
-		const idx = Math.min(Math.pow(6, Math.random()), guesses.length - 1);
-		return guesses.at(idx);
+		const idx = Math.min(Math.floor(Math.pow(5, Math.random()) - 1), guesses.length - 1);
+		const guess = guesses.at(idx);
+
+		if (guess) {
+			this.#previousOpponentGuesses[guess]++;
+		}
+
+		return guess;
 	}
 
 	async #processOpponentGuess() {
@@ -379,6 +372,10 @@ export default class GoFish {
 
 		if (guess && !this.#minimumKnownYourCards[guess]) {
 			this.#minimumKnownYourCards[guess] = 1;
+		}
+
+		if (guess) {
+			this.#previousOpponentGuesses[guess] = 0;
 		}
 
 		if (count > 0) {
