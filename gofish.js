@@ -114,9 +114,13 @@ export default class GoFish {
 		await this.#checkForCopleteBlocks();
 		await this.#cleanupLeftovers();
 
-		do {
-			await this.#processTurn();
-		} while (true);
+		try {
+			do {
+				await this.#processTurn();
+			} while (true);
+		} catch (e) {
+			console.log(e);
+		}
 	}
 
 	#showDialog(message, onAccept = null, onDecline = null) {
@@ -250,36 +254,29 @@ export default class GoFish {
 	async #processTurn() {
 		this.#turnOffEvents = true;
 
-		if (!this.#pickCardFromDeck()) {
-			const opponentFishes = this.#opponentFishesEl.children.length / 4;
-			const yourFishes = this.#yourFishesEl.children.length / 4;
+		const opponentFishes = this.#opponentFishesEl.children.length / 4;
+		const yourFishes = this.#yourFishesEl.children.length / 4;
 
-			if (opponentFishes > 6) {
-				this.#turnOffEvents = false;
-				this.#showDialog('You lost!', () => {
-					this.newGame();
-				});
+		if (opponentFishes > 6) {
+			this.#turnOffEvents = false;
+			this.#showDialog('You lost!', () => {
+				this.newGame();
+			});
 
-				throw 'You lost!';
-			}
+			throw 'You lost!';
+		}
 
-			if (yourFishes > 6) {
-				this.#turnOffEvents = false;
-				this.#showDialog('You won!', () => {
-					this.newGame();
-				});
+		if (yourFishes > 6) {
+			this.#turnOffEvents = false;
+			this.#showDialog('You won!', () => {
+				this.newGame();
+			});
 
-				throw 'You won!';
-			}
+			throw 'You won!';
 		}
 
 		if (this.#yourTurn) {
-			const guess = await this.#waitForYourGuess();
-			if (guess) {
-				await this.#showMessage(`Have any ${this.#cardNames[guess]}?`, true);
-			}
-
-			await this.#processYourGuess(guess);
+			await this.#processYourGuess();
 		} else {
 			await this.#processOpponentGuess();
 		}
@@ -369,7 +366,13 @@ export default class GoFish {
 		await this.#checkForCopleteBlocks();
 	}
 
-	async #processYourGuess(guess) {
+	async #processYourGuess() {
+		const guess = await this.#waitForYourGuess();
+
+		if (guess) {
+			await this.#showMessage(`Have any ${this.#cardNames[guess]}?`, true);
+		}
+
 		const group = this.#findGroup(guess ?? '--', this.#opponentCardsEl);
 		const count = group?.children.length ?? 0;
 
