@@ -12,6 +12,7 @@ export default class GoFish {
 	#previousOpponentGuesses = {};
 	#difficultyLevel = -1;
 	#blockEvents = false;
+	#clickAttempts = 0;
 	#sound = new Audio('card.mp3');
 	#firstTime = true;
 	#yourTurn = false;
@@ -46,6 +47,7 @@ export default class GoFish {
 			if (this.#turnOffEvents) {
 				e.preventDefault();
 				e.stopPropagation();
+				++this.#clickAttempts;
 			}
 		};
 
@@ -88,8 +90,17 @@ export default class GoFish {
 		if (this.#blockEvents) {
 			document.body.classList.add('wait');
 		} else {
+			this.#clickAttempts = 0;
 			document.body.classList.remove('wait');
 		}
+	}
+
+	#calculateDuration(ms) {
+		if (this.#clickAttempts >= 2) {
+			return 0;
+		}
+
+		return ms;
 	}
 
 	async newGame() {
@@ -171,7 +182,7 @@ export default class GoFish {
 		const group = this.#getGroup(card.dataset.level, cardsEl);
 		const deckBox = card.getBoundingClientRect();
 		const groupBox = (cardsEl === this.#opponentCardsEl ? this.#opponentCardsEl : group).getBoundingClientRect();
-		card.style.transition = `all linear ${duration}ms`;
+		card.style.transition = `all linear ${this.#calculateDuration(duration)}ms`;
 		card.style.transform = 'translateY(-90%)';
 		card.style.left = `${groupBox.x - deckBox.x}px`;
 		card.style.top = `${groupBox.y - deckBox.y}px`;
@@ -215,7 +226,7 @@ export default class GoFish {
 
 		if (your) {
 			for (const card of cards) {
-				card.style.transition = `all linear ${duration}ms`;
+				card.style.transition = `all linear ${this.#calculateDuration(duration)}ms`;
 				card.style.left = `${dx}px`;
 				card.style.top = `${dy}px`;
 				card.style.transform = 'translateY(-90%) rotate3d(1, 0, 1, 0deg)';
@@ -230,7 +241,7 @@ export default class GoFish {
 			}
 		} else {
 			for (const card of cards) {
-				card.style.transition = `all linear ${duration}ms`;
+				card.style.transition = `all linear ${this.#calculateDuration(duration)}ms`;
 				card.style.left = `${-dx}px`;
 				card.style.top = `${-dy}px`;
 				card.style.transform = 'translateY(-90%) rotate3d(1, 0, 1, 0deg)';
@@ -268,8 +279,14 @@ export default class GoFish {
 		this.#sound.play();
 	}
 
-	#wait(ms) {
-		return new Promise(resolve => setTimeout(resolve, ms));
+	async #wait(ms) {
+		while (ms > 0) {
+			const time = Math.min(ms, 200);
+			const actualTime = this.#calculateDuration(time);
+			ms -= time;
+			await new Promise(resolve => setTimeout(resolve, actualTime));
+			this.#clickAttempts = Math.max(0, this.#clickAttempts - actualTime / 500);
+		}
 	}
 
 	async #processTurn() {
@@ -576,7 +593,7 @@ export default class GoFish {
 
 		if (your) {
 			for (const card of cards) {
-				card.style.transition = `all linear ${duration}ms`;
+				card.style.transition = `all linear ${this.#calculateDuration(duration)}ms`;
 				card.style.left = `${-dx}px`;
 				card.style.top = `${-dy}px`;
 				await this.#wait(duration);
@@ -588,7 +605,7 @@ export default class GoFish {
 		} else {
 			for (const card of cards) {
 				card.parentElement.remove();
-				card.style.transition = `all linear ${duration}ms`;
+				card.style.transition = `all linear ${this.#calculateDuration(duration)}ms`;
 				card.style.left = `${dx}px`;
 				card.style.top = `${dy}px`;
 				destinationGroup.append(card.parentElement);
