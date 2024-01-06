@@ -51,6 +51,10 @@ export default class GoFish {
 			}
 		};
 
+		this.#popup.oncancel = e => {
+			e.preventDefault();
+		}
+
 		window.addEventListener('click', blocker, true);
 		window.addEventListener('change', blocker, true);
 		window.addEventListener('input', blocker, true);
