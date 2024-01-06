@@ -10,7 +10,7 @@ export default class GoFish {
 	#minimumKnownYourCards = {};
 	#maximumKnownCardsLeftInDeck = {};
 	#previousOpponentGuesses = {};
-	#difficulty = '';
+	#difficultyLevel = -1;
 	#turnOffEvents = false;
 	#sound = new Audio('card.mp3');
 	#firstTime = true;
@@ -31,6 +31,12 @@ export default class GoFish {
 		'J': 'jacks',
 		'Q': 'queens',
 		'K': 'kings',
+	};
+	#difficultyLevels = {
+		'easy': 1,
+		'medium': 2,
+		'hard': 3,
+		'god': 4,
 	};
 
 	constructor() {
@@ -59,6 +65,7 @@ export default class GoFish {
 		};
 
 		this.#difficultySelectEl.value = localStorage.getItem('difficulty') ?? 'medium';
+		this.#difficultySelectEl.value = this.#difficultySelectEl.value ? this.#difficultySelectEl.value : 'medium';
 
 		this.#difficultySelectEl.onchange = e => {
 			localStorage.setItem('difficulty', e.target.value);
@@ -85,7 +92,7 @@ export default class GoFish {
 		this.#yourInputReject?.('Started new game');
 		this.#yourTurn = Math.random() < 0.5;
 		this.#turnOffEvents = true;
-		this.#difficulty = this.#difficultySelectEl.value;
+		this.#difficultyLevel = this.#difficultyLevels[this.#difficultySelectEl.value];
 		this.#minimumKnownYourCards = Object.fromEntries(Object.keys(this.#cardNames).map(k => [k, 0]));
 		this.#previousOpponentGuesses = Object.fromEntries(Object.keys(this.#cardNames).map(k => [k, 0]));
 		this.#maximumKnownCardsLeftInDeck = Object.fromEntries(Object.keys(this.#cardNames).map(k => [k, 4]));
@@ -293,23 +300,44 @@ export default class GoFish {
 		const opponentCards = this.#getOpponentCards();
 		const guesses = Object.keys(opponentCards).filter(guess => opponentCards[guess]);
 
-		if (this.#difficulty === 'hard') {
+		if (this.#difficultyLevel === 4) {
+			const yourCards = this.#getYourCards();
+
+			for (const guess of guesses) {
+				if (yourCards[guess] && opponentCards[guess] + yourCards[guess] < 4) {
+					this.#previousOpponentGuesses[guess]++;
+					return guess;
+				}
+			}
+
+			for (const guess of guesses) {
+				if (opponentCards[guess] + yourCards[guess] === 4) {
+					this.#previousOpponentGuesses[guess]++;
+					return guess;
+				}
+			}
+		}
+
+		if (this.#difficultyLevel >= 3) {
 			this.#shuffle(guesses);
 
 			for (const guess of guesses) {
 				if (this.#minimumKnownYourCards[guess] === 3) {
+					this.#previousOpponentGuesses[guess]++;
 					return guess;
 				}
 			}
 
 			for (const guess of guesses) {
 				if (this.#minimumKnownYourCards[guess] === 2) {
+					this.#previousOpponentGuesses[guess]++;
 					return guess;
 				}
 			}
 
 			for (const guess of guesses) {
 				if (this.#minimumKnownYourCards[guess] === 1) {
+					this.#previousOpponentGuesses[guess]++;
 					return guess;
 				}
 			}
@@ -322,14 +350,14 @@ export default class GoFish {
 			return v1 > v2 ? -1 : 1;
 		});
 
-		if (this.#difficulty === 'easy') {
+		if (this.#difficultyLevel === 1) {
 			return guesses.at(-1);
 		}
 
 		const idx = Math.min(Math.floor(Math.pow(5, Math.random()) - 1), guesses.length - 1);
 		const guess = guesses.at(idx);
 
-		if (guess && this.#difficulty === 'hard') {
+		if (guess && this.#difficultyLevel >= 3) {
 			this.#previousOpponentGuesses[guess]++;
 		}
 
@@ -406,9 +434,15 @@ export default class GoFish {
 	}
 
 	#getOpponentCards() {
-		const opponentCards = Object.fromEntries(Object.entries(this.#minimumKnownYourCards).map(e => [e[0], 0]));
+		const opponentCards = Object.fromEntries(Object.entries(this.#cardNames).map(e => [e[0], 0]));
 		this.#opponentCardsEl.querySelectorAll('.card').forEach(card => opponentCards[card.dataset.level]++);
 		return opponentCards;
+	}
+
+	#getYourCards() {
+		const yourCards = Object.fromEntries(Object.entries(this.#cardNames).map(e => [e[0], 0]));
+		this.#yourCardsEl.querySelectorAll('.card').forEach(card => yourCards[card.dataset.level]++);
+		return yourCards;
 	}
 
 	#getYourCardsCount() {
