@@ -13,7 +13,8 @@ export default class GoFish {
 	#difficultyLevel = -1;
 	#blockEvents = false;
 	#clickAttempts = 0;
-	#sound = new Audio('card.mp3');
+	#soundContext = new AudioContext();
+	#soundBuffer = null;
 	#firstTime = true;
 	#yourTurn = false;
 	#message = document.createElement('div');
@@ -41,7 +42,6 @@ export default class GoFish {
 	};
 
 	constructor() {
-		this.#sound.load();
 		this.#message.classList.add('message');
 		const blocker = e => {
 			if (this.#turnOffEvents) {
@@ -103,9 +103,17 @@ export default class GoFish {
 		return ms;
 	}
 
+	async #initSound() {
+		const response = await fetch('card.mp3');
+		const arrayBuffer = await response.arrayBuffer();
+		this.#soundBuffer = await this.#soundContext.decodeAudioData(arrayBuffer);
+	}
+
 	async newGame() {
 		if (this.#firstTime) {
 			this.#firstTime = false;
+
+			await this.#initSound();
 
 			this.#showDialog('Welcome to Go Fish game!', () => {
 				this.newGame();
@@ -274,9 +282,10 @@ export default class GoFish {
 	}
 
 	#makeSwipeSound() {
-		this.#sound.pause();
-		this.#sound.currentTime = 0;
-		this.#sound.play();
+		const source = this.#soundContext.createBufferSource();
+		source.buffer = this.#soundBuffer;
+		source.connect(this.#soundContext.destination);
+		source.start();
 	}
 
 	async #wait(ms) {
