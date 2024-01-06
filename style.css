@@ -6,6 +6,7 @@
 * {
 	font-family: 'AppFont';
 	font-stretch: ultra-expanded;
+	touch-action: manipulation;
 }
 
 .wait {
