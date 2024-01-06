@@ -8,6 +8,14 @@
 	font-stretch: ultra-expanded;
 }
 
+.wait {
+	cursor: wait !important;
+
+	* {
+		cursor: wait !important;
+	}
+}
+
 .card,
 .card-back {
 	display: flex;
@@ -190,15 +198,17 @@ select {
 	border: 2px solid blue;
 	outline: none;
 
-	&:focus,
-	&:hover {
-		border-color: green;
-	}
+	&:not(.wait *) {
+		&:focus,
+		&:hover {
+			border-color: green;
+		}
 
-	&:active {
-		background: blue;
-		border-color: green;
-		color: white
+		&:active {
+			background: blue;
+			border-color: green;
+			color: white
+		}
 	}
 
 	option {
@@ -292,6 +302,7 @@ main {
 				top: -7.5px;
 				clip-path: polygon(0 0, 0 100%, 100% 0);
 			}
+
 			&::after {
 				top: 0;
 			}

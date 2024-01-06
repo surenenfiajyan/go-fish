@@ -11,7 +11,7 @@ export default class GoFish {
 	#maximumKnownCardsLeftInDeck = {};
 	#previousOpponentGuesses = {};
 	#difficultyLevel = -1;
-	#turnOffEvents = false;
+	#blockEvents = false;
 	#sound = new Audio('card.mp3');
 	#firstTime = true;
 	#yourTurn = false;
@@ -76,6 +76,20 @@ export default class GoFish {
 
 			});
 		};
+	}
+
+	get #turnOffEvents() {
+		return this.#blockEvents;
+	}
+
+	set #turnOffEvents(block) {
+		this.#blockEvents = !!block;
+
+		if (this.#blockEvents) {
+			document.body.classList.add('wait');
+		} else {
+			document.body.classList.remove('wait');
+		}
 	}
 
 	async newGame() {
