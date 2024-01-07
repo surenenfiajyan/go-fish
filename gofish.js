@@ -343,6 +343,7 @@ export default class GoFish {
 	#generateOpponentGuess() {
 		const opponentCards = this.#getOpponentCards();
 		const guesses = Object.keys(opponentCards).filter(guess => opponentCards[guess]);
+		const cardsLeftInDeck = this.#fullDeckEl.children.length;
 
 		if (this.#difficultyLevel === 4) {
 			const yourCards = this.#getYourCards();
@@ -388,6 +389,13 @@ export default class GoFish {
 		}
 
 		guesses.sort((g1, g2) => {
+			if (this.#difficultyLevel >= 3 && cardsLeftInDeck > 15) {
+				const v1 = - opponentCards[g1] - this.#previousOpponentGuesses[g1];
+				const v2 = - opponentCards[g2] - this.#previousOpponentGuesses[g2];
+
+				return v1 > v2 ? -1 : 1;
+			}
+
 			const v1 = this.#minimumKnownYourCards[g1] + opponentCards[g1] - this.#previousOpponentGuesses[g1];
 			const v2 = this.#minimumKnownYourCards[g2] + opponentCards[g2] - this.#previousOpponentGuesses[g2];
 
