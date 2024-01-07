@@ -390,14 +390,14 @@ export default class GoFish {
 
 		guesses.sort((g1, g2) => {
 			if (this.#difficultyLevel >= 3 && cardsLeftInDeck > 15) {
-				const v1 = - opponentCards[g1] - this.#previousOpponentGuesses[g1];
-				const v2 = - opponentCards[g2] - this.#previousOpponentGuesses[g2];
+				const v1 = - opponentCards[g1] - 2 * this.#previousOpponentGuesses[g1];
+				const v2 = - opponentCards[g2] - 2 * this.#previousOpponentGuesses[g2];
 
 				return v1 > v2 ? -1 : 1;
 			}
 
-			const v1 = this.#minimumKnownYourCards[g1] + opponentCards[g1] - this.#previousOpponentGuesses[g1];
-			const v2 = this.#minimumKnownYourCards[g2] + opponentCards[g2] - this.#previousOpponentGuesses[g2];
+			const v1 = this.#minimumKnownYourCards[g1] + opponentCards[g1] - 2 * this.#previousOpponentGuesses[g1];
+			const v2 = this.#minimumKnownYourCards[g2] + opponentCards[g2] - 2 * this.#previousOpponentGuesses[g2];
 
 			return v1 > v2 ? -1 : 1;
 		});
