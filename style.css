@@ -124,7 +124,7 @@
 	max-height: 130px;
 
 	.full-deck-card {
-		height: 1px;
+		height: 0.5px;
 
 		.card-back {
 			transform: translateY(-90%) rotate3d(1, 0, 1, 45deg);
