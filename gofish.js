@@ -444,6 +444,7 @@ export default class GoFish {
 		}
 
 		await this.#checkForCopleteBlocks();
+		await this.#wait(300);
 	}
 
 	async #processYourGuess() {
