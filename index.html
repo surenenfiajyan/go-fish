@@ -16,46 +16,47 @@
 	<script type="module" src="gofish.js"></script>
 	<script type="module">
 		import GoFish from './gofish.js';
+
 		const game = new GoFish;
 		game.newGame();
 	</script>
 </head>
 
 <body>
-	<header>
-		<button id="newGameBtn">New game</button>
-		<label>Difficulty:
-			<select id="difficultySelect">
-				<option value="easy">Easy</option>
-				<option value="medium">Medium</option>
-				<option value="hard">Hard</option>
-				<option value="god">God</option>
-			</select>
-		</label>
-	</header>
-	<main>
-		<div class="opponent-cards" id="opponentCards">
-		</div>
-		<div class="opponent-fishes" id="opponentFishes">
-		</div>
-		<div class="full-deck" id="fullDeck">
-		</div>
-		<div class="your-fishes" id="yourFishes">
-		</div>
-		<div class="your-cards" id="yourCards">
-		</div>
-	</main>
-	<dialog id="popup">
-		<form method="dialog">
-			<div class="message">
+<header>
+	<button id="newGameBtn">New game</button>
+	<label>Difficulty:
+		<select id="difficultySelect">
+			<option value="easy">Easy</option>
+			<option value="medium">Medium</option>
+			<option value="hard">Hard</option>
+			<option value="god">God</option>
+		</select>
+	</label>
+</header>
+<main>
+	<div class="opponent-cards" id="opponentCards">
+	</div>
+	<div class="opponent-fishes" id="opponentFishes">
+	</div>
+	<div class="full-deck" id="fullDeck">
+	</div>
+	<div class="your-fishes" id="yourFishes">
+	</div>
+	<div class="your-cards" id="yourCards">
+	</div>
+</main>
+<dialog id="popup">
+	<form method="dialog">
+		<div class="message">
 
-			</div>
-			<div class="buttons">
-				<button value="yes">OK</button>
-				<button value="no">No</button>
-			</div>
-		</form>
-	</dialog>
+		</div>
+		<div class="buttons">
+			<button value="yes">OK</button>
+			<button value="no">No</button>
+		</div>
+	</form>
+</dialog>
 </body>
 
 </html>

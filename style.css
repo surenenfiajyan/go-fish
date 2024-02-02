@@ -96,7 +96,7 @@
 .card-back {
 	background-color: aqua;
 	background-image: repeating-linear-gradient(45deg, red, red 2%, transparent 2%, transparent 6%),
-		repeating-linear-gradient(-45deg, red, red 2%, transparent 2%, transparent 6%);
+	repeating-linear-gradient(-45deg, red, red 2%, transparent 2%, transparent 6%);
 
 
 	&::before {
