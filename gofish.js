@@ -62,9 +62,9 @@ export default class GoFish {
 		window.addEventListener('focus', blocker, true);
 		window.addEventListener('mousedown', blocker, true);
 
-		this.#newGameButtonEl.onclick = e => {
+		this.#newGameButtonEl.onclick = () => {
 			this.#showDialog('Start a new game?', () => {
-				this.newGame();
+				this.newGame().then();
 			}, () => {
 
 			});
@@ -77,7 +77,7 @@ export default class GoFish {
 			localStorage.setItem('difficulty', e.target.value);
 
 			this.#showDialog('The difficulty will be applied only in the next game, would you like to start a new game?', () => {
-				this.newGame();
+				this.newGame().then();
 			}, () => {
 
 			});
@@ -136,10 +136,10 @@ export default class GoFish {
 		this.#opponentFishesEl.innerHTML = this.#yourFishesEl.innerHTML = this.#yourCardsEl.innerHTML = this.#opponentCardsEl.innerHTML = '';
 
 		const allCards = Object.keys(this.#minimumKnownYourCards).flatMap(level => [
-			{ type: 'hearts', level },
-			{ type: 'diamonds', level },
-			{ type: 'spades', level },
-			{ type: 'clubs', level }
+			{type: 'hearts', level},
+			{type: 'diamonds', level},
+			{type: 'spades', level},
+			{type: 'clubs', level}
 		]);
 
 		this.#shuffle(allCards);
@@ -390,8 +390,8 @@ export default class GoFish {
 
 		guesses.sort((g1, g2) => {
 			if (this.#difficultyLevel >= 3) {
-				const v1 = - opponentCards[g1] - 2 * this.#previousOpponentGuesses[g1];
-				const v2 = - opponentCards[g2] - 2 * this.#previousOpponentGuesses[g2];
+				const v1 = -opponentCards[g1] - 2 * this.#previousOpponentGuesses[g1];
+				const v2 = -opponentCards[g2] - 2 * this.#previousOpponentGuesses[g2];
 
 				return v1 > v2 ? -1 : 1;
 			}
