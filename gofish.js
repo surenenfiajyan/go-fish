@@ -239,13 +239,14 @@ export default class GoFish {
 		if (your) {
 			for (const card of cards) {
 				card.style.transition = `all linear ${this.#calculateDuration(duration)}ms`;
+				card.style.zIndex = '20';
 				card.style.left = `${dx}px`;
 				card.style.top = `${dy}px`;
 				card.style.transform = 'translateY(-90%) rotate3d(1, 0, 1, 0deg)';
 				await this.#wait(duration);
 				this.#makeSwipeSound();
 				card.classList.replace('card', 'card-back');
-				card.style.left = card.style.top = '';
+				card.style.zIndex = card.style.left = card.style.top = '';
 				card.parentElement.classList.replace('play-card', 'fish-card');
 				this.#yourFishesEl.append(card.parentElement);
 				await this.#wait(duration / 10);
@@ -280,6 +281,14 @@ export default class GoFish {
 			group.classList.add('group');
 			group.dataset.level = level;
 			cardsEl.append(group);
+		}
+
+		if (!group.firstElementChild) {
+			const emptyGroups = cardsEl.querySelectorAll('.group:not(:has(:first-child))');
+			const otherGroup = emptyGroups[Math.floor(Math.random() * emptyGroups.length)];
+			group.dataset.level = otherGroup.dataset.level;
+			otherGroup.dataset.level = level;
+			group = otherGroup;
 		}
 
 		return group;
@@ -630,9 +639,10 @@ export default class GoFish {
 				card.style.transition = `all linear ${this.#calculateDuration(duration)}ms`;
 				card.style.left = `${dx}px`;
 				card.style.top = `${dy}px`;
+				card.style.zIndex = '20';
 				destinationGroup.append(card.parentElement);
 				await this.#wait(duration / 10);
-				card.style.left = card.style.top = '';
+				card.style.zIndex = card.style.left = card.style.top = '';
 				await this.#wait(duration);
 				this.#makeSwipeSound();
 			}
