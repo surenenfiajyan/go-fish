@@ -136,10 +136,10 @@ export default class GoFish {
 		this.#opponentFishesEl.innerHTML = this.#yourFishesEl.innerHTML = this.#yourCardsEl.innerHTML = this.#opponentCardsEl.innerHTML = '';
 
 		const allCards = Object.keys(this.#minimumKnownYourCards).flatMap(level => [
-			{type: 'hearts', level},
-			{type: 'diamonds', level},
-			{type: 'spades', level},
-			{type: 'clubs', level}
+			{ type: 'hearts', level },
+			{ type: 'diamonds', level },
+			{ type: 'spades', level },
+			{ type: 'clubs', level }
 		]);
 
 		this.#shuffle(allCards);
@@ -399,14 +399,14 @@ export default class GoFish {
 
 		guesses.sort((g1, g2) => {
 			if (this.#difficultyLevel >= 3) {
-				const v1 = -opponentCards[g1] - 2 * this.#previousOpponentGuesses[g1];
-				const v2 = -opponentCards[g2] - 2 * this.#previousOpponentGuesses[g2];
+				const v1 = -opponentCards[g1] - 3 * this.#previousOpponentGuesses[g1];
+				const v2 = -opponentCards[g2] - 3 * this.#previousOpponentGuesses[g2];
 
 				return v1 > v2 ? -1 : 1;
 			}
 
-			const v1 = this.#minimumKnownYourCards[g1] + opponentCards[g1] - 2 * this.#previousOpponentGuesses[g1];
-			const v2 = this.#minimumKnownYourCards[g2] + opponentCards[g2] - 2 * this.#previousOpponentGuesses[g2];
+			const v1 = this.#minimumKnownYourCards[g1] + opponentCards[g1] - 3 * this.#previousOpponentGuesses[g1];
+			const v2 = this.#minimumKnownYourCards[g2] + opponentCards[g2] - 3 * this.#previousOpponentGuesses[g2];
 
 			return v1 > v2 ? -1 : 1;
 		});
@@ -584,7 +584,6 @@ export default class GoFish {
 
 	#addCardClickListener(card, callback) {
 		card.tabIndex = 0;
-		card.style.cursor = 'pointer';
 		card.onclick = () => callback(card);
 		card.onkeydown = e => {
 			if (e.key === "Enter") {
@@ -603,7 +602,7 @@ export default class GoFish {
 	async #cleanupLeftovers() {
 		await this.#wait(150);
 		document.querySelectorAll('.card, .card-back').forEach(card => {
-			card.style.transition = card.style.cursor = '';
+			card.style.transition = '';
 			card.removeAttribute('tabindex');
 			card.onclick = card.onkeydown = null;
 		});
