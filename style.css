@@ -217,9 +217,13 @@ label:has(input[type=checkbox]) {
 		font-size: 15px;
 	}
 
-	&:has(input:focus) {
-		&::before {
-			border: 2px solid green;
+	&:not(.wait *) {
+
+		&:has(input:focus),
+		&:hover {
+			&::before {
+				border: 2px solid green;
+			}
 		}
 	}
 
