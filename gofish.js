@@ -7,6 +7,7 @@ export default class GoFish {
 	#yourFishesEl = document.getElementById('yourFishes');
 	#yourCardsEl = document.getElementById('yourCards');
 	#popup = document.getElementById('popup');
+	#soundCheckbox = document.getElementById('soundCheckbox');
 	#minimumKnownYourCards = {};
 	#maximumKnownCardsLeftInDeck = {};
 	#previousOpponentGuesses = {};
@@ -70,8 +71,13 @@ export default class GoFish {
 			});
 		};
 
+		this.#soundCheckbox.checked = localStorage.getItem('sound') !== 'off';
 		this.#difficultySelectEl.value = localStorage.getItem('difficulty') ?? 'medium';
 		this.#difficultySelectEl.value = this.#difficultySelectEl.value ? this.#difficultySelectEl.value : 'medium';
+
+		this.#soundCheckbox.onchange = e => {
+			localStorage.setItem('sound', e.target.checked ? 'on' : 'off');
+		};
 
 		this.#difficultySelectEl.onchange = e => {
 			localStorage.setItem('difficulty', e.target.value);
@@ -295,6 +301,10 @@ export default class GoFish {
 	}
 
 	#makeSwipeSound() {
+		if (!this.#soundCheckbox.checked) {
+			return;
+		}
+
 		const source = this.#soundContext.createBufferSource();
 		source.buffer = this.#soundBuffer;
 		source.connect(this.#soundContext.destination);
