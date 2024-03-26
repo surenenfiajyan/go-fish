@@ -149,7 +149,7 @@ export default class GoFish {
 		]);
 
 		this.#shuffle(allCards);
-		this.#fullDeckEl.innerHTML = allCards.map(x => `<div class="full-deck-card"><div class="card-back" data-type="${x.type}" data-level="${x.level}"></div></div>`).join('');
+		this.#fullDeckEl.innerHTML = allCards.map(x => `<div class="full-deck-card"><div class="card-back" aria-hidden="true" data-type="${x.type}" data-level="${x.level}"></div></div>`).join('');
 
 		for (let i = 0; i < 7; ++i) {
 			const card = this.#pickCardFromDeck();
@@ -600,6 +600,10 @@ export default class GoFish {
 				callback(card);
 			}
 		};
+
+		const name = this.#cardNames[card.dataset.level];
+		card.ariaLabel = card.title = card.classList.contains('card-back') ? 'Pick' : (name[0].toUpperCase() + name.substring(1));
+		card.ariaHidden = false;
 	}
 
 	async #showMessage(message, your, duration = 2000) {
@@ -614,6 +618,9 @@ export default class GoFish {
 		document.querySelectorAll('.card, .card-back').forEach(card => {
 			card.style.transition = '';
 			card.removeAttribute('tabindex');
+			card.removeAttribute('title');
+			card.removeAttribute('aria-label');
+			card.ariaHidden = true;
 			card.onclick = card.onkeydown = null;
 		});
 	}
