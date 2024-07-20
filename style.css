@@ -129,7 +129,7 @@
 	align-items: center;
 	justify-content: flex-start;
 	height: 90px;
-	margin: calc(50vh - 325px) 0;
+	margin: calc(50dvh - 325px) 0;
 
 	.full-deck-card {
 		height: 0.5px;
