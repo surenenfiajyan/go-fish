@@ -11,7 +11,7 @@ export default class GoFish {
 	#minimumKnownYourCards = {};
 	#maximumKnownCardsLeftInDeck = {};
 	#previousOpponentGuesses = {};
-	#opponentGuessToAvoid = null;
+	#opponentGuessesToAvoid = new Set();
 	#difficultyLevel = -1;
 	#blockEvents = false;
 	#clickAttempts = 0;
@@ -170,7 +170,7 @@ export default class GoFish {
 				await this.#processTurn();
 			} while (true);
 		} catch (e) {
-			this.#opponentGuessToAvoid = null;
+			this.#opponentGuessesToAvoid.clear();
 			console.log(e);
 		}
 	}
@@ -390,7 +390,7 @@ export default class GoFish {
 			for (const guess of guesses) {
 				if (this.#minimumKnownYourCards[guess] === 3) {
 					this.#previousOpponentGuesses[guess]++;
-					this.#opponentGuessToAvoid = guess;
+					this.#opponentGuessesToAvoid.add(guess);
 					return guess;
 				}
 			}
@@ -398,7 +398,7 @@ export default class GoFish {
 			for (const guess of guesses) {
 				if (this.#minimumKnownYourCards[guess] === 2) {
 					this.#previousOpponentGuesses[guess]++;
-					this.#opponentGuessToAvoid = guess;
+					this.#opponentGuessesToAvoid.add(guess);
 					return guess;
 				}
 			}
@@ -406,7 +406,7 @@ export default class GoFish {
 			for (const guess of guesses) {
 				if (this.#minimumKnownYourCards[guess] === 1) {
 					this.#previousOpponentGuesses[guess]++;
-					this.#opponentGuessToAvoid = guess;
+					this.#opponentGuessesToAvoid.add(guess);
 					return guess;
 				}
 			}
@@ -430,17 +430,22 @@ export default class GoFish {
 			return guesses.at(-1);
 		}
 
-		if (this.#difficultyLevel >= 3 && guesses.length > 1) {
-			const idx = guesses.indexOf(this.#opponentGuessToAvoid);
+		if (this.#difficultyLevel >= 3 && guesses.length > 0) {
+			const filtered = guesses.filter(guess => !this.#opponentGuessesToAvoid.has(guess));
 
-			if (idx > -1) {
-				guesses.splice(idx, 1);
+			if (filtered.length) {
+				guesses.splice(0, guesses.length, ...filtered);
+			} else {
+				guesses.length = 1;
 			}
 		}
 
 		const idx = Math.min(Math.floor(Math.pow(1 + cardsLeftInDeck / 8, Math.random()) - 1), guesses.length - 1);
 		const guess = guesses.at(idx);
-		this.#opponentGuessToAvoid = guess ?? null;
+
+		if (guess) {
+			this.#opponentGuessesToAvoid.add(guess);
+		}
 
 		if (guess && this.#difficultyLevel >= 3) {
 			this.#previousOpponentGuesses[guess]++;
@@ -508,10 +513,13 @@ export default class GoFish {
 			const card = this.#pickCardFromDeck();
 
 			if (card) {
-				this.#opponentGuessToAvoid = null;
-
 				if (this.#yourTurn) {
 					this.#minimumKnownYourCards[guess]++;
+				} else {
+					for (const first of this.#opponentGuessesToAvoid) {
+						this.#opponentGuessesToAvoid.delete(first);
+						break;
+					}
 				}
 
 				await this.#addToCardsFromDeck(this.#yourCardsEl, card);
