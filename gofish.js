@@ -436,7 +436,7 @@ export default class GoFish {
 		}
 
 		const idx = this.#difficultyLevel > 1 ?
-			Math.min(Math.floor(Math.pow(1 + cardsLeftInDeck / 8, Math.random()) - 1), guesses.length - 1) :
+			Math.min(Math.floor(Math.pow(1 + cardsLeftInDeck / (this.#difficultyLevel > 2 ? 12 : 8), Math.random()) - 1), guesses.length - 1) :
 			-1;
 
 		const guess = guesses.at(idx);
