@@ -10,11 +10,11 @@ export default class GoFish {
 	#soundCheckbox = document.getElementById('soundCheckbox');
 	#minimumKnownYourCards = {};
 	#maximumKnownCardsLeftInDeck = {};
-	#previousOpponentGuesses = {};
-	#opponentGuessesToAvoid = new Set();
+	#lastOpponentGuesses = {};
 	#difficultyLevel = -1;
 	#blockEvents = false;
 	#clickAttempts = 0;
+	#totalYourPickedCards = 0;
 	#soundContext = new AudioContext();
 	#soundBuffer = null;
 	#firstTime = true;
@@ -136,9 +136,10 @@ export default class GoFish {
 		this.#yourInputReject?.('Started new game');
 		this.#yourTurn = Math.random() < 0.5;
 		this.#turnOffEvents = true;
+		this.#totalYourPickedCards = 0;
 		this.#difficultyLevel = this.#difficultyLevels[this.#difficultySelectEl.value];
 		this.#minimumKnownYourCards = Object.fromEntries(Object.keys(this.#cardNames).map(k => [k, 0]));
-		this.#previousOpponentGuesses = Object.fromEntries(Object.keys(this.#cardNames).map(k => [k, 0]));
+		this.#lastOpponentGuesses = Object.fromEntries(Object.keys(this.#cardNames).map(k => [k, -Infinity]));
 		this.#maximumKnownCardsLeftInDeck = Object.fromEntries(Object.keys(this.#cardNames).map(k => [k, 4]));
 		this.#opponentFishesEl.innerHTML = this.#yourFishesEl.innerHTML = this.#yourCardsEl.innerHTML = this.#opponentCardsEl.innerHTML = '';
 
@@ -170,7 +171,6 @@ export default class GoFish {
 				await this.#processTurn();
 			} while (true);
 		} catch (e) {
-			this.#opponentGuessesToAvoid.clear();
 			console.log(e);
 		}
 	}
@@ -371,14 +371,14 @@ export default class GoFish {
 
 			for (const guess of guesses) {
 				if (yourCards[guess] && opponentCards[guess] + yourCards[guess] < 4) {
-					this.#previousOpponentGuesses[guess]++;
+					this.#lastOpponentGuesses[guess] = this.#totalYourPickedCards;
 					return guess;
 				}
 			}
 
 			for (const guess of guesses) {
 				if (opponentCards[guess] + yourCards[guess] === 4) {
-					this.#previousOpponentGuesses[guess]++;
+					this.#lastOpponentGuesses[guess] = this.#totalYourPickedCards;
 					return guess;
 				}
 			}
@@ -389,24 +389,21 @@ export default class GoFish {
 
 			for (const guess of guesses) {
 				if (this.#minimumKnownYourCards[guess] === 3) {
-					this.#previousOpponentGuesses[guess]++;
-					this.#opponentGuessesToAvoid.add(guess);
+					this.#lastOpponentGuesses[guess] = this.#totalYourPickedCards;
 					return guess;
 				}
 			}
 
 			for (const guess of guesses) {
 				if (this.#minimumKnownYourCards[guess] === 2) {
-					this.#previousOpponentGuesses[guess]++;
-					this.#opponentGuessesToAvoid.add(guess);
+					this.#lastOpponentGuesses[guess] = this.#totalYourPickedCards;
 					return guess;
 				}
 			}
 
 			for (const guess of guesses) {
 				if (this.#minimumKnownYourCards[guess] === 1) {
-					this.#previousOpponentGuesses[guess]++;
-					this.#opponentGuessesToAvoid.add(guess);
+					this.#lastOpponentGuesses[guess] = this.#totalYourPickedCards;
 					return guess;
 				}
 			}
@@ -414,24 +411,22 @@ export default class GoFish {
 
 		guesses.sort((g1, g2) => {
 			if (this.#difficultyLevel >= 3) {
-				const v1 = -opponentCards[g1] - 3 * this.#previousOpponentGuesses[g1];
-				const v2 = -opponentCards[g2] - 3 * this.#previousOpponentGuesses[g2];
+				const v1 = -opponentCards[g1] + (this.#totalYourPickedCards - this.#lastOpponentGuesses[g1]) / 4;
+				const v2 = -opponentCards[g2] + (this.#totalYourPickedCards - this.#lastOpponentGuesses[g2]) / 4;
 
 				return v1 > v2 ? -1 : 1;
 			}
 
-			const v1 = this.#minimumKnownYourCards[g1] + opponentCards[g1] - 3 * this.#previousOpponentGuesses[g1];
-			const v2 = this.#minimumKnownYourCards[g2] + opponentCards[g2] - 3 * this.#previousOpponentGuesses[g2];
+			const v1 = this.#minimumKnownYourCards[g1];
+			const v2 = this.#minimumKnownYourCards[g2];
 
 			return v1 > v2 ? -1 : 1;
 		});
 
-		if (this.#difficultyLevel === 1) {
-			return guesses.at(-1);
-		}
-
 		if (this.#difficultyLevel >= 3 && guesses.length > 0) {
-			const filtered = guesses.filter(guess => !this.#opponentGuessesToAvoid.has(guess));
+			const filtered = guesses.filter(
+				guess => this.#difficultyLevel >= 3 && this.#totalYourPickedCards - this.#lastOpponentGuesses[guess] > 0
+			);
 
 			if (filtered.length) {
 				guesses.splice(0, guesses.length, ...filtered);
@@ -440,15 +435,14 @@ export default class GoFish {
 			}
 		}
 
-		const idx = Math.min(Math.floor(Math.pow(1 + cardsLeftInDeck / 8, Math.random()) - 1), guesses.length - 1);
+		const idx = this.#difficultyLevel > 1 ?
+			Math.min(Math.floor(Math.pow(1 + cardsLeftInDeck / 8, Math.random()) - 1), guesses.length - 1) :
+			-1;
+
 		const guess = guesses.at(idx);
 
 		if (guess) {
-			this.#opponentGuessesToAvoid.add(guess);
-		}
-
-		if (guess && this.#difficultyLevel >= 3) {
-			this.#previousOpponentGuesses[guess]++;
+			this.#lastOpponentGuesses[guess] = this.#totalYourPickedCards;
 		}
 
 		return guess;
@@ -500,7 +494,7 @@ export default class GoFish {
 		}
 
 		if (guess) {
-			this.#previousOpponentGuesses[guess] = 0;
+			this.#lastOpponentGuesses[guess] = -Infinity;
 		}
 
 		if (count > 0) {
@@ -515,14 +509,10 @@ export default class GoFish {
 			if (card) {
 				if (this.#yourTurn) {
 					this.#minimumKnownYourCards[guess]++;
-				} else {
-					for (const first of this.#opponentGuessesToAvoid) {
-						this.#opponentGuessesToAvoid.delete(first);
-						break;
-					}
 				}
 
 				await this.#addToCardsFromDeck(this.#yourCardsEl, card);
+				++this.#totalYourPickedCards;
 			}
 
 			await this.#checkForCopleteBlocks(this.#yourTurn);
