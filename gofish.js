@@ -139,7 +139,7 @@ export default class GoFish {
 		this.#totalYourPickedCards = 0;
 		this.#difficultyLevel = this.#difficultyLevels[this.#difficultySelectEl.value];
 		this.#minimumKnownYourCards = Object.fromEntries(Object.keys(this.#cardNames).map(k => [k, 0]));
-		this.#lastOpponentGuesses = Object.fromEntries(Object.keys(this.#cardNames).map(k => [k, -Infinity]));
+		this.#lastOpponentGuesses = Object.fromEntries(Object.keys(this.#cardNames).map(k => [k, -1]));
 		this.#maximumKnownCardsLeftInDeck = Object.fromEntries(Object.keys(this.#cardNames).map(k => [k, 4]));
 		this.#opponentFishesEl.innerHTML = this.#yourFishesEl.innerHTML = this.#yourCardsEl.innerHTML = this.#opponentCardsEl.innerHTML = '';
 
@@ -411,22 +411,28 @@ export default class GoFish {
 
 		guesses.sort((g1, g2) => {
 			if (this.#difficultyLevel >= 3) {
-				const v1 = -opponentCards[g1] + (this.#totalYourPickedCards - this.#lastOpponentGuesses[g1]) / 4;
-				const v2 = -opponentCards[g2] + (this.#totalYourPickedCards - this.#lastOpponentGuesses[g2]) / 4;
+				const v1 = opponentCards[g1] + this.#totalYourPickedCards - this.#lastOpponentGuesses[g1];
+				const v2 = opponentCards[g2] + this.#totalYourPickedCards - this.#lastOpponentGuesses[g2];
 
-				return v1 > v2 ? -1 : 1;
+				return v1 - v2;
 			}
 
 			const v1 = this.#minimumKnownYourCards[g1];
 			const v2 = this.#minimumKnownYourCards[g2];
 
-			return v1 > v2 ? -1 : 1;
+			return v1 - v2;
 		});
 
 		if (this.#difficultyLevel >= 3 && guesses.length > 0) {
-			const filtered = guesses.filter(
-				guess => this.#difficultyLevel >= 3 && this.#totalYourPickedCards - this.#lastOpponentGuesses[guess] > 0
+			let filtered = guesses.filter(
+				guess => this.#totalYourPickedCards - this.#lastOpponentGuesses[guess] > 1
 			);
+
+			if (!filtered.length) {
+				filtered = guesses.filter(
+					guess => this.#totalYourPickedCards - this.#lastOpponentGuesses[guess] > 0
+				);
+			}
 
 			if (filtered.length) {
 				guesses.splice(0, guesses.length, ...filtered);
@@ -494,7 +500,7 @@ export default class GoFish {
 		}
 
 		if (guess) {
-			this.#lastOpponentGuesses[guess] = -Infinity;
+			this.#lastOpponentGuesses[guess] = -1;
 		}
 
 		if (count > 0) {
