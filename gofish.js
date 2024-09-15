@@ -424,15 +424,9 @@ export default class GoFish {
 		});
 
 		if (this.#difficultyLevel >= 3 && guesses.length > 0) {
-			let filtered = guesses.filter(
-				guess => this.#totalYourPickedCards - this.#lastOpponentGuesses[guess] > 1
+			const filtered = guesses.filter(
+				guess => this.#totalYourPickedCards - this.#lastOpponentGuesses[guess] > 0
 			);
-
-			if (!filtered.length) {
-				filtered = guesses.filter(
-					guess => this.#totalYourPickedCards - this.#lastOpponentGuesses[guess] > 0
-				);
-			}
 
 			if (filtered.length) {
 				guesses.splice(0, guesses.length, ...filtered);
