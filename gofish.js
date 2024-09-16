@@ -136,7 +136,7 @@ export default class GoFish {
 		this.#yourInputReject?.('Started new game');
 		this.#yourTurn = Math.random() < 0.5;
 		this.#turnOffEvents = true;
-		this.#totalYourPickedCards = 0;
+		this.#totalYourPickedCards = 7;
 		this.#difficultyLevel = this.#difficultyLevels[this.#difficultySelectEl.value];
 		this.#minimumKnownYourCards = Object.fromEntries(Object.keys(this.#cardNames).map(k => [k, 0]));
 		this.#lastOpponentGuesses = Object.fromEntries(Object.keys(this.#cardNames).map(k => [k, -1]));
@@ -442,7 +442,7 @@ export default class GoFish {
 		const guess = guesses.at(idx);
 
 		if (guess) {
-			this.#lastOpponentGuesses[guess] = this.#totalYourPickedCards;
+			this.#lastOpponentGuesses[guess] = --this.#totalYourPickedCards;
 		}
 
 		return guess;
