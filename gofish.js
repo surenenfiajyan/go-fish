@@ -411,8 +411,8 @@ export default class GoFish {
 
 		guesses.sort((g1, g2) => {
 			if (this.#difficultyLevel >= 3) {
-				const v1 = opponentCards[g1] - (this.#totalYourPickedCards - this.#lastOpponentGuesses[g1]) * 2;
-				const v2 = opponentCards[g2] - (this.#totalYourPickedCards - this.#lastOpponentGuesses[g2]) * 2;
+				const v1 = 2 * opponentCards[g1] - (this.#totalYourPickedCards - this.#lastOpponentGuesses[g1]) ** 1.5;
+				const v2 = 2 * opponentCards[g2] - (this.#totalYourPickedCards - this.#lastOpponentGuesses[g2]) ** 1.5;
 
 				return v1 - v2;
 			}
@@ -435,9 +435,17 @@ export default class GoFish {
 			}
 		}
 
-		const idx = this.#difficultyLevel > 1 ?
-			Math.min(Math.floor(Math.pow(1 + cardsLeftInDeck / (this.#difficultyLevel > 2 ? 12 : 8), Math.random()) - 1), guesses.length - 1) :
-			-1;
+		let idx = 0;
+
+		if (this.#difficultyLevel > 2) {
+			if (cardsLeftInDeck >= 15 && this.#opponentFishesEl.children.length + 1 >= this.#yourFishesEl.children.length) {
+				idx = Math.min(Math.floor(Math.pow(1 + cardsLeftInDeck / 12, Math.random()) - 1), guesses.length - 1);
+			}
+		} else if (this.#difficultyLevel > 1) {
+			idx = Math.min(Math.floor(Math.pow(1 + cardsLeftInDeck / 8, Math.random()) - 1), guesses.length - 1);
+		} else {
+			idx = -1;
+		}
 
 		const guess = guesses.at(idx);
 
