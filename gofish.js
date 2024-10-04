@@ -411,8 +411,8 @@ export default class GoFish {
 
 		guesses.sort((g1, g2) => {
 			if (this.#difficultyLevel >= 3) {
-				const v1 = 2 * opponentCards[g1] - (this.#totalYourPickedCards - this.#lastOpponentGuesses[g1]) ** 1.5;
-				const v2 = 2 * opponentCards[g2] - (this.#totalYourPickedCards - this.#lastOpponentGuesses[g2]) ** 1.5;
+				const v1 = opponentCards[g1] * (this.#totalYourPickedCards - this.#lastOpponentGuesses[g1]) ** 1.5;
+				const v2 = opponentCards[g2] * (this.#totalYourPickedCards - this.#lastOpponentGuesses[g2]) ** 1.5;
 
 				return v1 - v2;
 			}
