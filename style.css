@@ -17,16 +17,28 @@
 	}
 }
 
-.github-link {
+.github-link,
+.kofi-link {
 	position: absolute;
 	right: 20px;
-	top: 210px;
 	text-decoration: none;
 	font-size: 15px;
 
 	span:not(.icon) {
 		text-decoration: underline;
 	}
+
+	.icon {
+		color: gray;
+	}
+}
+
+.github-link {
+	top: 210px;
+}
+
+.kofi-link {
+	top: 240px;
 }
 
 .card,
