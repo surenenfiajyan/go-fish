@@ -366,7 +366,7 @@ export default class GoFish {
 		const guesses = Object.keys(opponentCards).filter(guess => opponentCards[guess]);
 		const cardsLeftInDeck = this.#fullDeckEl.children.length;
 
-		if (this.#difficultyLevel === 4) {
+		if (this.#difficultyLevel === 4 && Math.random() < 0.5) {
 			const yourCards = this.#getYourCards();
 
 			for (const guess of guesses) {
